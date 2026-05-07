@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maintenance Task Tracker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <svg class="icon-sprite" aria-hidden="true">
+      <symbol id="icon-plus" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14" />
+      </symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24">
+        <path d="m5 13 4 4L19 7" />
+      </symbol>
+      <symbol id="icon-undo" viewBox="0 0 24 24">
+        <path d="M9 14 4 9l5-5" />
+        <path d="M4 9h9a6 6 0 0 1 0 12h-2" />
+      </symbol>
+      <symbol id="icon-trash" viewBox="0 0 24 24">
+        <path d="M3 6h18" />
+        <path d="M8 6V4h8v2" />
+        <path d="M6 6l1 15h10l1-15" />
+        <path d="M10 11v6M14 11v6" />
+      </symbol>
+    </svg>
+
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">Workshop board</p>
+          <h1>Maintenance Tasks</h1>
+        </div>
+        <section class="summary-strip" aria-label="Task summary">
+          <div class="summary-item">
+            <span id="openCount">0</span>
+            <small>Open</small>
+          </div>
+          <div class="summary-item">
+            <span id="doneCount">0</span>
+            <small>Complete</small>
+          </div>
+        </section>
+      </header>
+
+      <section class="task-entry" aria-labelledby="newTaskHeading">
+        <h2 id="newTaskHeading">New task</h2>
+        <form id="taskForm" class="task-form" autocomplete="off">
+          <label>
+            <span>Task</span>
+            <input
+              id="taskName"
+              name="taskName"
+              type="text"
+              placeholder="Inspect conveyor guard"
+              required
+            />
+          </label>
+
+          <label>
+            <span>Assigned to</span>
+            <input
+              id="assignee"
+              name="assignee"
+              type="text"
+              placeholder="A. Patel"
+              required
+            />
+          </label>
+
+          <label>
+            <span>Priority</span>
+            <select id="priority" name="priority" required>
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+          </label>
+
+          <button class="primary-action" type="submit">
+            <svg aria-hidden="true"><use href="#icon-plus"></use></svg>
+            <span>Add task</span>
+          </button>
+        </form>
+      </section>
+
+      <section class="task-board" aria-labelledby="taskListHeading">
+        <div class="board-toolbar">
+          <h2 id="taskListHeading">Task list</h2>
+          <div class="status-filter" role="tablist" aria-label="Filter tasks by status">
+            <button class="filter-button is-active" type="button" data-filter="all" role="tab" aria-selected="true">
+              All
+            </button>
+            <button class="filter-button" type="button" data-filter="open" role="tab" aria-selected="false">
+              Open
+            </button>
+            <button class="filter-button" type="button" data-filter="complete" role="tab" aria-selected="false">
+              Complete
+            </button>
+          </div>
+        </div>
+
+        <div id="taskList" class="task-list" aria-live="polite"></div>
+        <p id="emptyState" class="empty-state" hidden>No tasks match this filter.</p>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
