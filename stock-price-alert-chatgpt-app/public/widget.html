@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>Stock Price Alert</title>
+    <style>
+      :root {
+        color: #15171a;
+        background: #f8faf9;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #f8faf9;
+      }
+
+      button, input, select { font: inherit; }
+
+      main {
+        width: 100%;
+        min-width: 320px;
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 18px;
+      }
+
+      .surface {
+        display: grid;
+        gap: 16px;
+        overflow: hidden;
+        border: 1px solid #d9dfdc;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 12px 24px rgba(22, 31, 28, 0.08);
+      }
+
+      header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 18px 0;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.2;
+        letter-spacing: 0;
+      }
+
+      .symbol {
+        margin-top: 6px;
+        color: #52615c;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .status {
+        min-width: 96px;
+        border: 1px solid #cfd7d3;
+        border-radius: 999px;
+        background: #f4f7f5;
+        color: #33413d;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .status.triggered { border-color: #f0b8a7; background: #fff2ed; color: #9b341a; }
+      .status.clear { border-color: #b8dec6; background: #effaf3; color: #1f6b3b; }
+
+      .quote-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(72px, 0.7fr));
+        gap: 1px;
+        background: #dfe5e2;
+        border-top: 1px solid #dfe5e2;
+        border-bottom: 1px solid #dfe5e2;
+      }
+
+      .metric { min-height: 74px; padding: 14px; background: #fff; }
+      .metric strong { display: block; color: #15171a; font-size: 24px; line-height: 1.05; white-space: nowrap; }
+      .metric span { display: block; margin-top: 6px; color: #64726d; font-size: 12px; line-height: 1.35; }
+      .up { color: #176b3a !important; }
+      .down { color: #a4391f !important; }
+
+      form {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 10px;
+        padding: 0 18px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        color: #52615c;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      input, select {
+        width: 100%;
+        min-height: 40px;
+        border: 1px solid #cfd7d3;
+        border-radius: 6px;
+        background: #fff;
+        color: #15171a;
+        padding: 8px 10px;
+      }
+
+      .condition {
+        display: grid;
+        gap: 8px;
+        padding: 14px 18px;
+        border-top: 1px solid #dfe5e2;
+        background: #f4f7f5;
+        color: #33413d;
+      }
+
+      .condition p { margin: 0; line-height: 1.45; }
+      .condition strong { color: #15171a; }
+
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        color: #64726d;
+        font-size: 12px;
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 0 18px 18px;
+      }
+
+      .left-actions, .right-actions { display: flex; align-items: center; gap: 10px; }
+
+      button {
+        min-height: 40px;
+        border: 0;
+        border-radius: 6px;
+        background: #145c52;
+        color: #fff;
+        padding: 8px 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button.secondary { border: 1px solid #cfd7d3; background: #fff; color: #26312e; }
+      button:disabled { cursor: not-allowed; opacity: 0.6; }
+
+      .toggle { display: flex; align-items: center; gap: 8px; color: #52615c; font-size: 12px; font-weight: 700; }
+      .toggle input { width: 16px; min-height: 16px; accent-color: #145c52; }
+
+      .error {
+        display: none;
+        margin: 0 18px;
+        border: 1px solid #efc1b6;
+        border-radius: 6px;
+        background: #fff4f1;
+        color: #8a2d17;
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .error.visible { display: block; }
+
+      @media (max-width: 680px) {
+        main { padding: 12px; }
+        .quote-grid, form { grid-template-columns: 1fr 1fr; }
+        .actions { align-items: stretch; flex-direction: column; }
+        .left-actions, .right-actions { width: 100%; justify-content: space-between; }
+        button { flex: 1; }
+      }
+
+      @media (max-width: 430px) {
+        .quote-grid, form { grid-template-columns: 1fr; }
+        header { flex-direction: column; }
+        .status { width: 100%; }
+        .metric strong { white-space: normal; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class='surface' aria-live='polite'>
+        <header>
+          <div>
+            <h1>Stock Price Alert</h1>
+            <div class='symbol' id='symbolLabel'>No symbol</div>
+          </div>
+          <div class='status' id='statusLabel'>Waiting</div>
+        </header>
+
+        <section class='quote-grid' aria-label='Quote'>
+          <div class='metric'><strong id='priceValue'>n/a</strong><span>Last price</span></div>
+          <div class='metric'><strong id='moveValue'>n/a</strong><span>Move</span></div>
+          <div class='metric'><strong id='openValue'>n/a</strong><span>Open</span></div>
+          <div class='metric'><strong id='volumeValue'>n/a</strong><span>Volume</span></div>
+        </section>
+
+        <p class='error' id='errorBox'></p>
+
+        <form id='alertForm'>
+          <label>Symbol<input id='symbolInput' name='symbol' value='AAPL' autocomplete='off'></label>
+          <label>Alert<select id='alertTypeInput' name='alertType'>
+            <option value='percent_move_abs'>Move +/-</option>
+            <option value='percent_move_up'>Move up</option>
+            <option value='percent_move_down'>Move down</option>
+            <option value='above'>Above price</option>
+            <option value='below'>Below price</option>
+          </select></label>
+          <label>Target<input id='targetInput' name='targetPrice' type='number' min='0' step='0.01' placeholder='250'></label>
+          <label>Percent<input id='percentInput' name='percentChange' type='number' min='0' max='100' step='0.1' value='1'></label>
+        </form>
+
+        <section class='condition'>
+          <p><strong id='conditionTitle'>Condition</strong></p>
+          <p id='conditionText'>Run a check to evaluate the alert.</p>
+          <div class='meta-row'><span id='providerText'>Provider: n/a</span><span id='timeText'>Checked: n/a</span></div>
+        </section>
+
+        <div class='actions'>
+          <div class='left-actions'>
+            <button id='checkButton' type='submit' form='alertForm'>Check</button>
+            <button id='draftButton' class='secondary' type='button'>Draft alert</button>
+          </div>
+          <div class='right-actions'>
+            <label class='toggle'><input id='autoInput' type='checkbox'>Auto check</label>
+            <select id='intervalInput' aria-label='Auto check interval'><option value='15'>15s</option><option value='30' selected>30s</option><option value='60'>60s</option></select>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type='module'>
+      const els = {
+        symbolLabel: document.querySelector('#symbolLabel'),
+        statusLabel: document.querySelector('#statusLabel'),
+        priceValue: document.querySelector('#priceValue'),
+        moveValue: document.querySelector('#moveValue'),
+        openValue: document.querySelector('#openValue'),
+        volumeValue: document.querySelector('#volumeValue'),
+        errorBox: document.querySelector('#errorBox'),
+        form: document.querySelector('#alertForm'),
+        symbolInput: document.querySelector('#symbolInput'),
+        alertTypeInput: document.querySelector('#alertTypeInput'),
+        targetInput: document.querySelector('#targetInput'),
+        percentInput: document.querySelector('#percentInput'),
+        conditionTitle: document.querySelector('#conditionTitle'),
+        conditionText: document.querySelector('#conditionText'),
+        providerText: document.querySelector('#providerText'),
+        timeText: document.querySelector('#timeText'),
+        checkButton: document.querySelector('#checkButton'),
+        draftButton: document.querySelector('#draftButton'),
+        autoInput: document.querySelector('#autoInput'),
+        intervalInput: document.querySelector('#intervalInput'),
+      };
+
+      let rpcId = 0;
+      let autoTimer = null;
+      let latestOutput = window.openai?.toolOutput ?? window.openai?.widgetState?.latestOutput ?? null;
+      const pendingRequests = new Map();
+
+      const money = (value) => {
+        if (typeof value !== 'number' || !Number.isFinite(value)) return 'n/a';
+        return value.toLocaleString('en-US', { minimumFractionDigits: value >= 100 ? 2 : 3, maximumFractionDigits: value >= 100 ? 2 : 4 });
+      };
+      const percent = (value) => typeof value === 'number' && Number.isFinite(value) ? `${value >= 0 ? '+' : ''}${value.toFixed(2)}%` : 'n/a';
+      const compact = (value) => typeof value === 'number' && Number.isFinite(value) ? Intl.NumberFormat('en-US', { notation: 'compact' }).format(value) : 'n/a';
+
+      const setError = (message) => {
+        els.errorBox.textContent = message ?? '';
+        els.errorBox.classList.toggle('visible', Boolean(message));
+      };
+
+      const saveState = () => window.openai?.setWidgetState?.({
+        symbol: els.symbolInput.value,
+        alertType: els.alertTypeInput.value,
+        targetPrice: els.targetInput.value,
+        percentChange: els.percentInput.value,
+        autoCheck: els.autoInput.checked,
+        intervalSeconds: els.intervalInput.value,
+        latestOutput,
+      });
+
+      const restoreState = () => {
+        const source = window.openai?.widgetState ?? window.openai?.toolInput ?? {};
+        if (source.symbol) els.symbolInput.value = source.symbol;
+        if (source.alertType) els.alertTypeInput.value = source.alertType;
+        if (source.targetPrice) els.targetInput.value = source.targetPrice;
+        if (source.percentChange) els.percentInput.value = source.percentChange;
+        if (source.autoCheck) els.autoInput.checked = Boolean(source.autoCheck);
+        if (source.intervalSeconds) els.intervalInput.value = String(source.intervalSeconds);
+      };
+
+      const collectInput = () => {
+        const input = { symbol: els.symbolInput.value.trim() || 'AAPL', alertType: els.alertTypeInput.value };
+        const target = Number(els.targetInput.value);
+        const pct = Number(els.percentInput.value);
+        if (Number.isFinite(target) && target > 0) input.targetPrice = target;
+        if (Number.isFinite(pct) && pct > 0) input.percentChange = pct;
+        return input;
+      };
+
+      const rpcNotify = (method, params) => window.parent.postMessage({ jsonrpc: '2.0', method, params }, '*');
+      const rpcRequest = (method, params) => new Promise((resolve, reject) => {
+        const id = ++rpcId;
+        const timeout = window.setTimeout(() => {
+          pendingRequests.delete(id);
+          reject(new Error('The ChatGPT host did not respond.'));
+        }, 12000);
+        pendingRequests.set(id, { resolve, reject, timeout });
+        window.parent.postMessage({ jsonrpc: '2.0', id, method, params }, '*');
+      });
+
+      const initializeBridge = async () => {
+        if (window.parent === window) return;
+        try {
+          await rpcRequest('ui/initialize', { appInfo: { name: 'stock-price-alert-widget', version: '0.1.0' }, appCapabilities: {}, protocolVersion: '2026-01-26' });
+          rpcNotify('ui/notifications/initialized', {});
+        } catch {}
+      };
+
+      const bridgeReady = initializeBridge();
+      const callTool = async (args) => {
+        if (window.openai?.callTool) return window.openai.callTool('watch_stock_price', args);
+        await bridgeReady;
+        return rpcRequest('tools/call', { name: 'watch_stock_price', arguments: args });
+      };
+
+      const render = () => {
+        const output = latestOutput;
+        const alert = output?.alert;
+        els.symbolLabel.textContent = output?.symbol ?? els.symbolInput.value.trim() || 'No symbol';
+        els.priceValue.textContent = money(output?.price);
+        els.openValue.textContent = money(output?.open);
+        els.volumeValue.textContent = compact(output?.volume);
+        els.providerText.textContent = `Provider: ${output?.provider ?? 'n/a'}`;
+        els.timeText.textContent = `Checked: ${output?.fetchedAt ? new Date(output.fetchedAt).toLocaleString() : 'n/a'}`;
+        const move = alert?.changeFromBaselinePercent;
+        els.moveValue.textContent = percent(move);
+        els.moveValue.classList.toggle('up', typeof move === 'number' && move >= 0);
+        els.moveValue.classList.toggle('down', typeof move === 'number' && move < 0);
+        els.statusLabel.className = 'status';
+        if (alert?.triggered) { els.statusLabel.textContent = 'Triggered'; els.statusLabel.classList.add('triggered'); }
+        else if (alert) { els.statusLabel.textContent = 'Clear'; els.statusLabel.classList.add('clear'); }
+        else { els.statusLabel.textContent = 'Waiting'; }
+        els.conditionTitle.textContent = alert?.alertType ? alert.alertType.replaceAll('_', ' ') : 'Condition';
+        els.conditionText.textContent = alert?.reason ?? 'Run a check to evaluate the alert.';
+        els.draftButton.disabled = !output;
+        saveState();
+      };
+
+      const checkPrice = async () => {
+        setError(null);
+        els.checkButton.disabled = true;
+        els.checkButton.textContent = 'Checking';
+        try {
+          const response = await callTool(collectInput());
+          latestOutput = response?.structuredContent ?? response ?? latestOutput;
+          render();
+        } catch (error) {
+          setError(error instanceof Error ? error.message : String(error));
+        } finally {
+          els.checkButton.disabled = false;
+          els.checkButton.textContent = 'Check';
+        }
+      };
+
+      const configureAuto = () => {
+        if (autoTimer) window.clearInterval(autoTimer);
+        autoTimer = null;
+        if (els.autoInput.checked) {
+          const seconds = Number(els.intervalInput.value) || 30;
+          autoTimer = window.setInterval(() => void checkPrice(), seconds * 1000);
+        }
+        saveState();
+      };
+
+      window.addEventListener('message', (event) => {
+        if (event.source !== window.parent) return;
+        const message = event.data;
+        if (!message || message.jsonrpc !== '2.0') return;
+        if (typeof message.id === 'number') {
+          const pending = pendingRequests.get(message.id);
+          if (!pending) return;
+          pendingRequests.delete(message.id);
+          window.clearTimeout(pending.timeout);
+          if (message.error) pending.reject(message.error);
+          else pending.resolve(message.result);
+          return;
+        }
+        if (message.method === 'ui/notifications/tool-result') {
+          latestOutput = message.params?.structuredContent ?? latestOutput;
+          render();
+        }
+      }, { passive: true });
+
+      els.form.addEventListener('submit', (event) => { event.preventDefault(); void checkPrice(); });
+      els.autoInput.addEventListener('change', configureAuto);
+      els.intervalInput.addEventListener('change', configureAuto);
+      for (const input of [els.symbolInput, els.alertTypeInput, els.targetInput, els.percentInput]) input.addEventListener('change', saveState);
+      els.draftButton.addEventListener('click', () => {
+        if (!latestOutput) return;
+        const alert = latestOutput.alert;
+        const prompt = `Summarize this stock alert in one concise message: ${latestOutput.symbol} last price ${money(latestOutput.price)}; alert ${alert?.triggered ? 'triggered' : 'not triggered'}; ${alert?.reason ?? ''}`;
+        if (window.openai?.sendFollowUpMessage) window.openai.sendFollowUpMessage({ prompt, scrollToBottom: true });
+        else rpcNotify('ui/message', { role: 'user', content: [{ type: 'text', text: prompt }] });
+      });
+
+      restoreState();
+      render();
+      configureAuto();
+    </script>
+  </body>
+</html>
